@@ -75,7 +75,7 @@ const mapType = {
     proxy.on('error', (error) => {
       logger.error('proxy handle', error);
     });
-    ctx.body = proxy;
+    ctx.body = ctx.req.pipe(proxy);
   },
   object: options => (ctx) => {
     const proxy = request(options);
@@ -88,7 +88,7 @@ const mapType = {
     proxy.on('error', (error) => {
       logger.error('proxy handle', error);
     });
-    ctx.body = proxy;
+    ctx.body = ctx.req.pipe(proxy);
   },
 };
 
