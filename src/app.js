@@ -10,14 +10,14 @@ log4js.configure({
   appenders: {
     app: {
       type: 'dateFile',
-      filename: 'logs/app.log',
+      filename: '/api/app.log',
       pattern: '-yyyy-MM-dd',
     },
   },
   categories: { default: { appenders: ['app'], level: 'DEBUG' } },
 });
 
-const { api, middlewares = [] } = require('./api');
+const { api, middlewares = [] } = require('/api/logs/api'); // eslint-disable-line
 const apiParser = require('./apiParser');
 
 const logger = log4js.getLogger('app');
