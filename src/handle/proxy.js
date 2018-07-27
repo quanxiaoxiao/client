@@ -5,15 +5,15 @@ const _ = require('lodash');
 
 const logger = log4js.getLogger('app');
 
-const apiRequest = options =>
+const apiRequest = (options, req) =>
   new Promise((resolve, reject) => {
-    request(options, (error, res, body) => {
+    req.pipe(request(options, (error, res, body) => {
       if (error) {
         reject(error);
       } else {
         resolve(body);
       }
-    });
+    }));
   });
 
 const mapType = {
@@ -54,7 +54,7 @@ const mapType = {
         ...first,
       };
     }
-    const body = await apiRequest(options);
+    const body = await apiRequest(options, ctx.req);
     ctx.body = fp.compose(...other.reverse())(body, ctx);
   },
   function: fn => async (ctx) => {
