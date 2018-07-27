@@ -1,0 +1,26 @@
+{
+  "name": "client",
+  "version": "0.0.1",
+  "description": "",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "PORT=3003 node src/app.js",
+    "test": "ava"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@koa/cors": "^2.2.2",
+    "ava": "^0.25.0",
+    "chalk": "^2.4.1",
+    "koa": "^2.5.2",
+    "koa-compress": "^3.0.0",
+    "koa-conditional-get": "^2.0.0",
+    "koa-etag": "^3.0.0",
+    "koa-router": "^7.4.0",
+    "lodash": "^4.17.10",
+    "log4js": "^3.0.2",
+    "request": "^2.87.0"
+  }
+}
