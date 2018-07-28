@@ -1,8 +1,8 @@
 FROM quanxiaoxiao/node:1
 
-RUN mkdir /server /api
+RUN mkdir /app /api
 
-WORKDIR /server
+WORKDIR /app
 
 COPY package.json .
 

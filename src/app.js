@@ -1,4 +1,6 @@
 const Koa = require('koa');
+const path = require('path');
+const isInDocker = require('./utils').isInDocker();
 const Router = require('koa-router');
 const cors = require('@koa/cors');
 const compress = require('koa-compress');
@@ -10,14 +12,16 @@ log4js.configure({
   appenders: {
     app: {
       type: 'dateFile',
-      filename: '/api/logs/app.log',
+      filename: isInDocker ?
+        '/api/logs/app.log' :
+        path.resolve(__dirname, '..', 'logs/app.log'),
       pattern: '-yyyy-MM-dd',
     },
   },
   categories: { default: { appenders: ['app'], level: 'DEBUG' } },
 });
 
-const { api, middlewares = [] } = require('/api/api.js'); // eslint-disable-line
+const { api, middlewares = [] } = isInDocker ? require('/api/api.js') : require('./api'); // eslint-disable-line
 const apiParser = require('./apiParser');
 
 const logger = log4js.getLogger('app');
@@ -51,6 +55,7 @@ routeList.forEach(({ method, pathname, handle }) => {
 });
 
 app.listen(port, () => {
+  console.log(`server listen at port: ${port}`);
   logger.info(`listen at port: ${port}`);
 });
 
