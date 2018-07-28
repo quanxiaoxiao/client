@@ -1,4 +1,6 @@
 const Koa = require('koa');
+const http = require('http');
+const url = require('url');
 const path = require('path');
 const isInDocker = require('./utils').isInDocker();
 const Router = require('koa-router');
@@ -50,13 +52,28 @@ const routeList = apiParser(api);
 
 logger.info('routerList', routeList);
 
-routeList.forEach(({ method, pathname, handle }) => {
-  router[method.toLowerCase()](pathname, handle);
-});
+routeList
+  .filter(item => item.handleType !== 'socket')
+  .forEach(({ method, pathname, handle }) => {
+    router[method.toLowerCase()](pathname, handle);
+  });
 
-app.listen(port, () => {
+const server = http.createServer(app.callback()).listen(port, () => {
   console.log(`server listen at port: ${port}`);
   logger.info(`listen at port: ${port}`);
+});
+
+server.on('upgrade', (req, socket, head) => {
+  const { pathname } = url.parse(req.url);
+  const upgrade = routeList.find(item =>
+    item.pathname === pathname &&
+    item.method === 'GET' &&
+    item.handleType === 'socket');
+  if (upgrade) {
+    upgrade.handle(req, socket, head);
+  } else {
+    socket.destroy();
+  }
 });
 
 process.on('uncaughtException', (error) => {
@@ -66,3 +83,4 @@ process.on('uncaughtException', (error) => {
   }, 3000);
   killTimer.unref();
 });
+
