@@ -24,9 +24,7 @@ const mapType = {
     });
     proxy.on('response', ({ headers, statusCode }) => {
       ctx.status = statusCode;
-      Object.entries(headers).forEach(([key, value]) => ctx.set({
-        [key]: value,
-      }));
+      ctx.set(headers);
     });
     proxy.on('error', (error) => {
       logger.error('proxy handle', error);
@@ -68,9 +66,7 @@ const mapType = {
     const proxy = request(options);
     proxy.on('response', ({ headers, statusCode }) => {
       ctx.status = statusCode;
-      Object.entries(headers).forEach(([key, value]) => ctx.set({
-        [key]: value,
-      }));
+      ctx.set(headers);
     });
     proxy.on('error', (error) => {
       logger.error('proxy handle', error);
@@ -81,9 +77,7 @@ const mapType = {
     const proxy = request(options);
     proxy.on('response', ({ headers, statusCode }) => {
       ctx.status = statusCode;
-      Object.entries(headers).forEach(([key, value]) => ctx.set({
-        [key]: value,
-      }));
+      ctx.set(headers);
     });
     proxy.on('error', (error) => {
       logger.error('proxy handle', error);

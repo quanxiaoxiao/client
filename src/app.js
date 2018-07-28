@@ -59,7 +59,6 @@ app.listen(port, () => {
   logger.info(`listen at port: ${port}`);
 });
 
-
 process.on('uncaughtException', (error) => {
   logger.error(error);
   const killTimer = setTimeout(() => {
