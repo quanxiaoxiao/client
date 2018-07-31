@@ -2,7 +2,6 @@ FROM quanxiaoxiao/node:1
 
 RUN mkdir /app /api
 
-RUN chmod a=rwx /app /api
 
 WORKDIR /app
 
@@ -12,6 +11,8 @@ RUN npm install
 
 COPY . .
 COPY src/api.js /api/api.js
+
+RUN chmod -R a+rwx /app /api
 
 EXPOSE 3000
 
