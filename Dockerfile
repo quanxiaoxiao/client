@@ -1,4 +1,4 @@
-FROM quanxiaoxiao/node:2
+FROM quanxiaoxiao/node:1
 
 RUN mkdir /app /api
 
