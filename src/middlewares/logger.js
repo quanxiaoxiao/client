@@ -3,7 +3,8 @@ const log4js = require('log4js');
 const logger = log4js.getLogger('app');
 
 module.exports = async (ctx, next) => {
-  logger.info(`<-- ${ctx.method} ${ctx.originalUrl}`);
+  const { method, originalUrl } = ctx;
+  logger.info(`<-- ${method} ${originalUrl}`);
   try {
     await next();
   } catch (error) {
@@ -17,7 +18,7 @@ module.exports = async (ctx, next) => {
   function done(event) {
     res.removeListener('finish', onfinish);
     res.removeListener('close', onclose);
-    logger.info(`${event === 'close' ? '-x-' : '-->'} statusCode: ${ctx.status}`);
+    logger.info(`${event === 'close' ? '-x-' : '-->'} ${method} ${originalUrl} statusCode: ${ctx.status}`);
   }
 
   res.once('finish', onfinish);
