@@ -12,7 +12,7 @@ RUN npm install
 COPY . .
 COPY src/api.js /api/api.js
 
-RUN chmod -R a+rwx /app /api
+RUN chmod -R a+rwx /api
 
 EXPOSE 3000
 
