@@ -2,6 +2,8 @@ FROM quanxiaoxiao/node:1
 
 RUN mkdir /app /api
 
+RUN chmod a=rwx /app /api
+
 WORKDIR /app
 
 COPY package.json .
