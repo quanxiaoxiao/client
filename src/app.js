@@ -78,6 +78,7 @@ server.on('upgrade', (req, socket, head) => {
 
 process.on('uncaughtException', (error) => {
   logger.error(error);
+  console.error(error);
   const killTimer = setTimeout(() => {
     process.exit(1);
   }, 3000);
