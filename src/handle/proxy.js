@@ -52,6 +52,9 @@ const mapType = {
         ...first,
       };
     }
+    if (options.url.indexOf('?') === -1) {
+      options.url = `${options.url}?${ctx.querystring}`;
+    }
     const body = await apiRequest(options, ctx.req);
     ctx.body = fp.compose(...other.reverse())(body, ctx);
   },
@@ -63,6 +66,9 @@ const mapType = {
         url: result,
       } : result,
     };
+    if (options.url.indexOf('?') === -1) {
+      options.url = `${options.url}?${ctx.querystring}`;
+    }
     const proxy = request(options);
     proxy.on('response', ({ headers, statusCode }) => {
       ctx.status = statusCode;
@@ -74,6 +80,9 @@ const mapType = {
     ctx.body = ctx.req.pipe(proxy);
   },
   object: options => (ctx) => {
+    if (options.url.indexOf('?') === -1) {
+      options.url = `${options.url}?${ctx.querystring}`; // eslint-disable-line
+    }
     const proxy = request(options);
     proxy.on('response', ({ headers, statusCode }) => {
       ctx.status = statusCode;
