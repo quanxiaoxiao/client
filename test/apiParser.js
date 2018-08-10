@@ -57,4 +57,14 @@ test('', (t) => {
   };
   list = apiParser(api);
   t.is(list.length, 1);
+
+  api = {
+    '/quan': {
+      all: {
+        body: { name: 'quan' },
+      },
+    },
+  };
+  list = apiParser(api);
+  t.is(list.length, 5);
 });

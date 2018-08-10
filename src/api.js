@@ -9,6 +9,11 @@ module.exports = {
     '/test': {
       file: path.resolve(__dirname, '..', 'static/test.json'),
     },
+    '/rice': {
+      all: {
+        body: { name: 'rice' },
+      },
+    },
     '/ws': {
       socket: (ws) => {
         ws.send('sdfsdfdf');

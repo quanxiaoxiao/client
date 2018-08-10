@@ -14,6 +14,15 @@ module.exports = api => Object.entries(api)
     }
     return true;
   })
+  .map(([pathname, value]) => {
+    if (value.all != null) {
+      return [pathname, METHODS.reduce((acc, method) => ({
+        ...acc,
+        [method.toLowerCase()]: value.all,
+      }), {})];
+    }
+    return [pathname, value];
+  })
   .reduce((acc, [pathname, value]) => {
     if (isSubset(new Set(Object.keys(value)
       .map(method => method.toUpperCase())), new Set(METHODS))) {

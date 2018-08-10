@@ -70,15 +70,17 @@ server.on('upgrade', (req, socket, head) => {
     item.method === 'GET' &&
     item.handleType === 'socket');
   if (upgrade) {
+    logger.info('socket connection:', socket.remoteAddress);
     upgrade.handle(req, socket, head);
   } else {
+    logger.info('socket destory:', socket.remoteAddress);
     socket.destroy();
   }
 });
 
 process.on('uncaughtException', (error) => {
-  logger.error(error);
   console.error(error);
+  logger.fatal(error);
   const killTimer = setTimeout(() => {
     process.exit(1);
   }, 3000);
