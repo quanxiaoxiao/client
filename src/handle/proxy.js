@@ -5,36 +5,35 @@ const _ = require('lodash');
 
 const logger = log4js.getLogger('app');
 
-const apiRequest = (options, req) =>
-  new Promise((resolve, reject) => {
-    req.pipe(request(options, (error, res, body) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(body);
-      }
-    }));
-  });
+const apiRequest = (options, req) => new Promise((resolve, reject) => {
+  req.pipe(request(options, (error, res, body) => {
+    if (error) {
+      reject(error);
+    } else {
+      resolve(body);
+    }
+  }));
+});
 
 const mapType = {
   string: host => (ctx) => {
     const proxy = request({
       url: `${host}${ctx.path}?${ctx.querystring}`,
-      method: ctx.method.toLowerCase(),
+      method: ctx.method,
     });
     proxy.on('response', ({ headers, statusCode }) => {
       ctx.status = statusCode;
       ctx.set(headers);
     });
     proxy.on('error', (error) => {
-      logger.error('proxy handle', error);
+      logger.warn('proxy handle', error);
     });
     ctx.body = ctx.req.pipe(proxy);
   },
   array: arr => async (ctx) => {
     const [first, ...other] = arr;
     let options = {
-      method: ctx.method.toLowerCase(),
+      method: ctx.method,
     };
     if (_.isString(first)) {
       options.url = `${first}${ctx.path}?${ctx.querystring}`;
@@ -61,7 +60,7 @@ const mapType = {
   function: fn => async (ctx) => {
     const result = await fn(ctx);
     const options = {
-      method: ctx.method.toLowerCase(),
+      method: ctx.method,
       ..._.isString(result) ? {
         url: result,
       } : result,
@@ -75,7 +74,7 @@ const mapType = {
       ctx.set(headers);
     });
     proxy.on('error', (error) => {
-      logger.error('proxy handle', error);
+      logger.warn('proxy handle', error);
     });
     ctx.body = ctx.req.pipe(proxy);
   },
@@ -89,7 +88,7 @@ const mapType = {
       ctx.set(headers);
     });
     proxy.on('error', (error) => {
-      logger.error('proxy handle', error);
+      logger.warn('proxy handle', error);
     });
     ctx.body = ctx.req.pipe(proxy);
   },
