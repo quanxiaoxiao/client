@@ -79,16 +79,15 @@ const mapType = {
     ctx.body = ctx.req.pipe(proxy);
   },
   object: options => (ctx) => {
-    if (options.url.indexOf('?') === -1) {
-      options.url = `${options.url}?${ctx.querystring}`; // eslint-disable-line
-    }
-    const proxy = request(options);
+    const url = options.url.indexOf('?') === -1 ?
+      `${options.url}?${ctx.querystring}` : options.url;
+    const proxy = request({ ...options, url });
     proxy.on('response', ({ headers, statusCode }) => {
       ctx.status = statusCode;
       ctx.set(headers);
     });
     proxy.on('error', (error) => {
-      logger.warn('proxy handle', error);
+      console.error(error);
     });
     ctx.body = ctx.req.pipe(proxy);
   },
