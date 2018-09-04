@@ -9,7 +9,7 @@ const logger = log4js.getLogger('app');
 
 const requestShim = (ctx, options) => {
   const passThrough = new PassThrough();
-  logger.log(`proxy: ${JSON.stringify(options)}`);
+  logger.info(`proxy: ${JSON.stringify(options)}`);
   ctx.req.pipe(http.request(options))
     .on('response', (res) => {
       ctx.code = res.statusCode;
@@ -86,7 +86,7 @@ const mapType = {
   },
   function: fn => async (ctx) => {
     const options = await fn(ctx);
-    ctx.body = requestShim(ctx, getProxyOptions(ctx, options.url, _.omit(options, ['url'])));
+    ctx.body = requestShim(ctx, getProxyOptions(ctx, options.url || options, _.isString(options) ? {} : _.omit(options, ['url'])));
   },
   object: options => (ctx) => {
     ctx.body = requestShim(ctx, getProxyOptions(ctx, options.url, _.omit(options, ['url'])));
