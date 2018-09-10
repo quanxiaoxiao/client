@@ -10,9 +10,12 @@ const logger = log4js.getLogger('app');
 const requestShim = (ctx, options) => {
   const passThrough = new PassThrough();
   logger.info(`proxy: ${JSON.stringify(options)}`);
+  if (!options.hostname) {
+    ctx.throw(404);
+  }
   ctx.req.pipe(http.request(options))
     .on('response', (res) => {
-      ctx.code = res.statusCode;
+      ctx.status = res.statusCode;
       ctx.set(res.headers);
       res.pipe(passThrough);
     })
@@ -35,7 +38,7 @@ const getProxyOptions = (ctx, proxyUrl, other = {}) => {
     path: pathname !== '/' ? `${pathname}?${query || ctx.querystring}` : `${ctx.path}?${ctx.querystring}`,
     port: Number(port) || 80,
     method: ctx.method,
-    headers: ctx.headers,
+    headers: _.omit(ctx.headers, ['host']),
     ...other,
   };
   return options;
@@ -62,10 +65,13 @@ const mapType = {
     const passThrough = new PassThrough();
     const buf = [];
     let size = 0;
+    if (!options.hostname) {
+      ctx.throw(404);
+    }
     ctx.req.pipe(http.request(options))
       .on('response', (res) => {
-        ctx.code = res.statusCode;
-        ctx.set(_.omit(res.headers, ['content-length', 'content-type']));
+        ctx.status = res.statusCode;
+        ctx.set(_.omit(res.headers, ['host', 'content-length', 'content-type']));
         ctx.type = 'json';
         res
           .on('data', (chunk) => {
