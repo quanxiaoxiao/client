@@ -33,9 +33,19 @@ const getProxyOptions = (ctx, proxyUrl, other = {}) => {
     query,
     pathname,
   } = url.parse(proxyUrl);
+  let path;
+  if (pathname === '/') {
+    if (other.isRaw) {
+      path = '/';
+    } else {
+      path = `${ctx.path}?${ctx.querystring}`;
+    }
+  } else {
+    path = `${pathname}?${query || ctx.querystring}`;
+  }
   const options = {
     hostname,
-    path: pathname !== '/' ? `${pathname}?${query || ctx.querystring}` : `${ctx.path}?${ctx.querystring}`,
+    path,
     port: Number(port) || 80,
     method: ctx.method,
     headers: _.omit(ctx.headers, ['host']),
@@ -62,12 +72,12 @@ const mapType = {
     if (_.isEmpty(options)) {
       ctx.throw(500);
     }
-    const passThrough = new PassThrough();
-    const buf = [];
-    let size = 0;
     if (!options.hostname) {
       ctx.throw(404);
     }
+    const passThrough = new PassThrough();
+    const buf = [];
+    let size = 0;
     ctx.req.pipe(http.request(options))
       .on('response', (res) => {
         ctx.status = res.statusCode;
