@@ -1,8 +1,6 @@
 const Koa = require('koa');
 const http = require('http');
 const url = require('url');
-const path = require('path');
-const isInDocker = require('./utils').isInDocker();
 const Router = require('koa-router');
 const cors = require('@koa/cors');
 const compress = require('koa-compress');
@@ -14,16 +12,14 @@ log4js.configure({
   appenders: {
     app: {
       type: 'dateFile',
-      filename: isInDocker ?
-        '/api/logs/app.log' :
-        path.resolve(__dirname, '..', 'logs/app.log'),
+      filename: '/api/logs/app.log',
       pattern: '-yyyy-MM-dd',
     },
   },
   categories: { default: { appenders: ['app'], level: 'DEBUG' } },
 });
 
-const { api, middlewares = [] } = isInDocker ? require('/api/api.js') : require('./api'); // eslint-disable-line
+const { api, middlewares = [] } = require('/api/api.js');
 const apiParser = require('./apiParser');
 
 const logger = log4js.getLogger('app');
