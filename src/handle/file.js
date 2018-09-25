@@ -2,9 +2,9 @@ const fp = require('lodash/fp');
 const _ = require('lodash');
 const path = require('path');
 const fs = require('fs');
-const { getFilePath } = require('../utils');
+const getFilePath = require('../utils/getFilePath');
 
-const mapType = {
+const handlerMap = {
   string: pathname => (ctx) => {
     ctx.type = path.extname(pathname);
     ctx.body = fs.createReadStream(getFilePath(pathname));
@@ -29,10 +29,18 @@ const mapType = {
 
 const file = (obj) => {
   if (obj == null) {
-    return obj;
+    return (ctx) => {
+      ctx.throw(404);
+    };
   }
-  const type = Array.isArray(obj) ? 'array' : typeof obj;
-  return mapType[type] && mapType[type](obj);
+  const handlerName = Array.isArray(obj) ? 'array' : typeof obj;
+  const handler = handlerMap[handlerName];
+  if (!handler) {
+    return (ctx) => {
+      ctx.throw(404);
+    };
+  }
+  return handler(obj);
 };
 
 module.exports = file;

@@ -41,8 +41,8 @@ middlewares.forEach((middleware) => {
   app.use(middleware);
 });
 
-app.use(router.routes()).use(router.allowedMethods());
-
+app.use(router.routes());
+app.use(router.allowedMethods());
 
 const routeList = apiParser(api);
 
@@ -59,15 +59,18 @@ const server = http.createServer(app.callback()).listen(port, () => {
   logger.info(`listen at port: ${port}`);
 });
 
-server.on('upgrade', (req, socket, head) => {
+server.on('error', (error) => {
+  logger.error(error);
+});
+
+server.on('upgrade', (req, socket) => {
   const { pathname } = url.parse(req.url);
-  const upgrade = routeList.find(item =>
-    item.pathname === pathname &&
-    item.method === 'GET' &&
-    item.handleType === 'socket');
+  const upgrade = routeList.find(item => item.pathname === pathname
+    && item.method === 'GET'
+    && item.handleType === 'wsProxy');
   if (upgrade) {
     logger.info('socket connection:', socket.remoteAddress);
-    upgrade.handle(req, socket, head);
+    upgrade.handle(req, socket, server);
   } else {
     logger.info('socket destory:', socket.remoteAddress);
     socket.destroy();
@@ -82,4 +85,3 @@ process.on('uncaughtException', (error) => {
   }, 3000);
   killTimer.unref();
 });
-
