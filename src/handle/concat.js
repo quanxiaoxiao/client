@@ -1,9 +1,44 @@
 const fs = require('fs');
 const _ = require('lodash');
+const log4js = require('log4js');
+const http = require('http');
 const getOutgoing = require('../http-proxy/getOutgoing');
-const stream = require('../http-proxy/stream');
-const stream2Promise = require('../utils/stream2Promise');
 const getFilePath = require('../utils/getFilePath');
+
+const logger = log4js.getLogger('app');
+
+const proxyRequest = options => new Promise((resolve, reject) => {
+  const outgoing = _.omit(_.omit(options, ['body']));
+  logger.info(`concat proxy: ${JSON.stringify(outgoing)}`);
+  const proxyReq = http.request(outgoing);
+  proxyReq
+    .once('response', (res) => {
+      const buf = [];
+      let size = 0;
+      const handleEnd = () => {
+        if (res.statusCode !== 200) {
+          reject(Buffer.concat(buf, size));
+        } else {
+          resolve(Buffer.concat(buf, size));
+        }
+      };
+      res.once('end', handleEnd);
+      res.once('error', () => {
+        res.off('end', handleEnd);
+      });
+      res.on('data', (chunk) => {
+        size += chunk.length;
+        buf.push(chunk);
+      });
+    })
+    .once('error', (error) => {
+      reject(error);
+    });
+  if (options.body != null) {
+    proxyReq.write(options.body);
+  }
+  proxyReq.end();
+});
 
 const handlerMap = {
   file: async (pathname, ctx) => {
@@ -11,7 +46,7 @@ const handlerMap = {
       pathname = await pathname(ctx);
     }
     if (!_.isString(pathname)) {
-      ctx.throw(404);
+      return Promise.reject();
     }
     return fs.readFileSync(getFilePath(pathname));
   },
@@ -21,10 +56,9 @@ const handlerMap = {
     }
     const outgoing = getOutgoing(ctx, options);
     if (!outgoing) {
-      return null;
+      return Promise.reject();
     }
-    const buf = await stream2Promise(stream(ctx, outgoing, true, false));
-    return buf;
+    return proxyRequest(outgoing);
   },
   body: async (body, ctx) => {
     if (_.isFunction(body)) {
