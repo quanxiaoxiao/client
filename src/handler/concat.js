@@ -5,11 +5,11 @@ const http = require('http');
 const getOutgoing = require('../http-proxy/getOutgoing');
 const getFilePath = require('../utils/getFilePath');
 
-const logger = log4js.getLogger('app');
+const logger = log4js.getLogger('handler concat');
 
 const proxyRequest = options => new Promise((resolve, reject) => {
   const outgoing = _.omit(_.omit(options, ['body']));
-  logger.info(`concat proxy: ${JSON.stringify(outgoing)}`);
+  logger.info(JSON.stringify(outgoing));
   const proxyReq = http.request(outgoing);
   proxyReq
     .once('response', (res) => {

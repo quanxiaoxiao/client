@@ -17,11 +17,17 @@ const handlerMap = {
     } else {
       pathname = await first(ctx);
     }
+    if (!_.isString(pathname)) {
+      ctx.trhow(500);
+    }
     ctx.type = path.extname(pathname);
     ctx.body = fp.compose(...other.reverse())(fs.readFileSync(getFilePath(pathname)));
   },
   function: fn => async (ctx) => {
     const pathname = await fn(ctx);
+    if (!_.isString(pathname)) {
+      ctx.trhow(500);
+    }
     ctx.type = path.extname(pathname);
     ctx.body = fs.createReadStream(getFilePath(pathname));
   },

@@ -85,7 +85,7 @@ const stream = (socket, outgoing, server) => {
 };
 
 
-const handleMap = {
+const handlerMap = {
   string: target => (req, socket, server) => {
     const outgoing = getOutgoing(req, target);
     if (!outgoing) {
@@ -119,14 +119,14 @@ const ws = (obj) => {
       socket.destroy();
     };
   }
-  const handleName = typeof obj;
-  const handle = handleMap[handleName];
-  if (!handle) {
+  const handlerName = typeof obj;
+  const handler = handlerMap[handlerName];
+  if (!handler) {
     return (req, socket) => {
       socket.destroy();
     };
   }
-  return handle(obj);
+  return handler(obj);
 };
 
 module.exports = ws;

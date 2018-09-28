@@ -46,18 +46,21 @@ app.use(router.allowedMethods());
 
 const routeList = apiParser(api);
 
-logger.info('routerList', routeList);
+logger.info('---------routerList start---------');
+logger.info(routeList);
+logger.info('---------routerList end---------');
 
 routeList
-  .filter(item => item.handleType !== 'socket')
-  .forEach(({ method, pathname, handle }) => {
-    router[method.toLowerCase()](pathname, handle);
+  .filter(item => item.handlerName !== 'wsProxy')
+  .forEach(({ method, pathname, handler }) => {
+    router[method.toLowerCase()](pathname, handler);
   });
 
-const server = http.createServer(app.callback()).listen(port, () => {
-  console.log(`server listen at port: ${port}`);
-  logger.info(`listen at port: ${port}`);
-});
+const server = http.createServer(app.callback())
+  .listen(port, () => {
+    console.log(`server listen at port: ${port}`);
+    logger.info(`listen at port: ${port}`);
+  });
 
 server.on('error', (error) => {
   logger.error(error);
@@ -67,10 +70,10 @@ server.on('upgrade', (req, socket) => {
   const { pathname } = url.parse(req.url);
   const upgrade = routeList.find(item => item.pathname === pathname
     && item.method === 'GET'
-    && item.handleType === 'wsProxy');
+    && item.handlerName === 'wsProxy');
   if (upgrade) {
     logger.info('socket connection:', socket.remoteAddress);
-    upgrade.handle(req, socket, server);
+    upgrade.handler(req, socket, server);
   } else {
     logger.info('socket destory:', socket.remoteAddress);
     socket.destroy();
