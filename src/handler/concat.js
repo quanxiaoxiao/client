@@ -1,15 +1,15 @@
 const fs = require('fs');
 const _ = require('lodash');
-const log4js = require('log4js');
 const http = require('http');
+const log4js = require('log4js');
 const getOutgoing = require('../http-proxy/getOutgoing');
 const getFilePath = require('../utils/getFilePath');
 
 const logger = log4js.getLogger('handler concat');
 
 const proxyRequest = options => new Promise((resolve, reject) => {
-  const outgoing = _.omit(_.omit(options, ['body']));
-  logger.info(JSON.stringify(outgoing));
+  const outgoing = _.omit(options, ['body']);
+  logger.info(`concat proxy: ${JSON.stringify(outgoing)}`);
   const proxyReq = http.request(outgoing);
   proxyReq
     .once('response', (res) => {
@@ -17,7 +17,7 @@ const proxyRequest = options => new Promise((resolve, reject) => {
       let size = 0;
       const handleEnd = () => {
         if (res.statusCode !== 200) {
-          reject(Buffer.concat(buf, size));
+          reject(Buffer.concat(buf, size).toString());
         } else {
           resolve(Buffer.concat(buf, size));
         }
@@ -35,9 +35,15 @@ const proxyRequest = options => new Promise((resolve, reject) => {
       reject(error);
     });
   if (options.body != null) {
-    proxyReq.write(options.body);
+    if (options.body.pipe) {
+      options.body.pipe(proxyReq);
+    } else {
+      proxyReq.write(options.body);
+      proxyReq.end();
+    }
+  } else {
+    proxyReq.end();
   }
-  proxyReq.end();
 });
 
 const handlerMap = {
@@ -75,8 +81,9 @@ const concat = arr => async (ctx) => {
   const last = _.last(arr);
   const handlerList = arr.filter(handler => handler !== last);
   const resultList = await Promise.all(handlerList.map(async (item) => {
-    const [handlerName, handler] = Object.entries(item)[0];
-    const ret = await handlerMap[handlerName](handler, ctx);
+    const handlerName = Object.keys(item)[0];
+    const handlerValue = item[handlerName];
+    const ret = await handlerMap[handlerName](handlerValue, ctx);
     return ret;
   }));
   const ret = await last(resultList, ctx);
