@@ -2,6 +2,7 @@ const Koa = require('koa');
 const http = require('http');
 const url = require('url');
 const Router = require('koa-router');
+const pathToRegexp = require('path-to-regexp');
 const cors = require('@koa/cors');
 const compress = require('koa-compress');
 const conditional = require('koa-conditional-get');
@@ -68,7 +69,7 @@ server.on('error', (error) => {
 
 server.on('upgrade', (req, socket) => {
   const { pathname } = url.parse(req.url);
-  const upgrade = routeList.find(item => item.pathname === pathname
+  const upgrade = routeList.find(item => pathToRegexp(item.pathname).test(pathname)
     && item.method === 'GET'
     && item.handlerName === 'wsProxy');
   if (upgrade) {

@@ -21,6 +21,7 @@
     "koa-router": "^7.4.0",
     "lodash": "^4.17.10",
     "log4js": "^3.0.6",
+    "path-to-regexp": "^3.0.0",
     "request": "^2.88.0",
     "ws": "^6.1.0"
   }
