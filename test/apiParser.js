@@ -1,7 +1,7 @@
 import test from 'ava';
 import apiParser from '../src/apiParser';
 
-test('', (t) => {
+test('api parser', (t) => {
   let api = {
     '/quan': {
       body: { name: 'quan' },

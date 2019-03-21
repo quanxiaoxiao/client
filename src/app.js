@@ -1,4 +1,5 @@
 const Koa = require('koa');
+const path = require('path');
 const http = require('http');
 const url = require('url');
 const Router = require('koa-router');
@@ -13,14 +14,14 @@ log4js.configure({
   appenders: {
     app: {
       type: 'dateFile',
-      filename: '/api/logs/app.log',
+      filename: path.resolve(__dirname, '..', 'logs', 'app.log'),
       pattern: '-yyyy-MM-dd',
     },
   },
   categories: { default: { appenders: ['app'], level: 'DEBUG' } },
 });
 
-const { api, middlewares = [] } = require('/api/api.js');
+const { api, middlewares = [] } = require('../api/api.js');
 const apiParser = require('./apiParser');
 
 const logger = log4js.getLogger('app');

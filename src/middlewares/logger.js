@@ -4,7 +4,7 @@ const logger = log4js.getLogger('app');
 
 module.exports = async (ctx, next) => {
   const { method, originalUrl } = ctx;
-  logger.info(`<-- ${method} ${originalUrl}`);
+  logger.info(`<-- ${ctx.req.remoteAddress} ${method} ${originalUrl}`);
   try {
     await next();
   } catch (error) {

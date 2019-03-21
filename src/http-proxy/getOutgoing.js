@@ -25,14 +25,14 @@ module.exports = (ctx, options) => {
   } = url.parse(target);
   let path;
   if (pathname === '/') {
-    path = `${ctx.path}?${ctx.querystring}`;
+    path = ctx.originalUrl;
   } else {
     path = `${pathname}?${query || ctx.querystring}`;
   }
   return {
     hostname,
     path,
-    port: Number(port) || 80,
+    port: parseInt(port, 10) || 80,
     method: ctx.method,
     headers: _.omit(ctx.headers, ['host']),
     ...options,
