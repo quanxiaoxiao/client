@@ -1,10 +1,11 @@
 const url = require('url');
 const http = require('http');
+const https = require('https');
 const _ = require('lodash');
 const log4js = require('log4js');
 const createHttpHeader = require('../utils/createHttpHeader');
 
-const logger = log4js.getLogger('app');
+const logger = log4js.getLogger('websocket');
 
 const getOutgoing = (req, options) => {
   if (options == null) {
@@ -41,7 +42,8 @@ const getOutgoing = (req, options) => {
   return {
     hostname,
     path,
-    port: Number(port) || 80,
+    schema: /^wss:/.test(target) ? https : http,
+    port: parseInt(port, 10) || 80,
     method: 'GET',
     ...options,
     headers,
@@ -49,8 +51,9 @@ const getOutgoing = (req, options) => {
 };
 
 const stream = (socket, outgoing, server) => {
-  const proxyReq = http.request(outgoing);
-  logger.info(`ws proxy: ${JSON.stringify(outgoing)}`);
+  const { schema, ...options } = outgoing;
+  const proxyReq = schema.request(options);
+  logger.info(options);
   socket.setTimeout(0);
   socket.setNoDelay(true);
   socket.setKeepAlive(true, 0);

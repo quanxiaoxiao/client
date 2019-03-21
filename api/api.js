@@ -25,5 +25,8 @@ module.exports = {
     '/static/*': {
       proxy: 'http://localhost:3003',
     },
+    '/test': {
+      proxy: 'http://localhost:3003',
+    },
   },
 };

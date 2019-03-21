@@ -1,4 +1,6 @@
 const url = require('url');
+const http = require('http');
+const https = require('https');
 const _ = require('lodash');
 
 module.exports = (ctx, options) => {
@@ -30,6 +32,7 @@ module.exports = (ctx, options) => {
     path = `${pathname}?${query || ctx.querystring}`;
   }
   return {
+    schema: /^https/.test(target) ? https : http,
     hostname,
     path,
     port: parseInt(port, 10) || 80,
