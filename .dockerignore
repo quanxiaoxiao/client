@@ -1,3 +1,6 @@
 package-lock.json
+.git
 logs
+test
+node_modules
 *.swp
