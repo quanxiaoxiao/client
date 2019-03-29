@@ -54,8 +54,8 @@ class HttpProxy extends PassThrough {
   attachReqEvents() {
     const { req } = this.ctx;
     req.on('error', this.handleProxyReqAborted);
-    req.on('close', this.handleProxyReqAborted);
     req.on('aborted', this.handleProxyReqAborted);
+    req.on('close', this.handleProxyReqAborted);
   }
 
   handleProxyReqAborted() {
@@ -67,9 +67,9 @@ class HttpProxy extends PassThrough {
 
   cleanupReqEvents() {
     const { req } = this.ctx;
-    req.off('error', this.handleProxyReqAborted);
     req.off('close', this.handleProxyReqAborted);
     req.off('aborted', this.handleProxyReqAborted);
+    req.off('error', this.handleProxyReqAborted);
   }
 
   cleanupProxyReqEvents() {

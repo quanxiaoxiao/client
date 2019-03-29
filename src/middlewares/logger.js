@@ -1,10 +1,10 @@
 const log4js = require('log4js');
 
-const logger = log4js.getLogger('app');
+const logger = log4js.getLogger('request');
 
 module.exports = async (ctx, next) => {
   const { method, originalUrl } = ctx;
-  logger.info(`<-- ${ctx.req.remoteAddress} ${method} ${originalUrl}`);
+  logger.info(`<-- ${method} ${originalUrl} user-agent: ${ctx.get('user-agent')}`);
   try {
     await next();
   } catch (error) {

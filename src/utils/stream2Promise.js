@@ -44,8 +44,8 @@ const fromReadable = (stream) => {
       size = 0;
       stream.removeListener('data', onData);
       stream.removeListener('end', onEnd);
-      stream.removeListener('error', onEnd);
       stream.removeListener('close', onClose);
+      stream.removeListener('error', onEnd);
     }
   });
 };
