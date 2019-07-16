@@ -1,4 +1,5 @@
 /* eslint no-use-before-define: 0 */
+const http = require('http');
 
 const httpConnect = (
   options,
@@ -11,7 +12,7 @@ const httpConnect = (
     isClose: false,
   };
 
-  const { schema, body, ...other } = options;
+  const { schema = http, body, ...other } = options;
 
   let proxySocket = null;
   let proxyRes = null;
@@ -104,7 +105,7 @@ const httpConnect = (
     proxyReq.on('socket', handleSocketOnProxyReq);
     proxyReq.on('response', handleResponseOnProxyReq);
 
-    if (body === null) {
+    if (body == null) {
       proxyReq.end();
     } else if (body && body.pipe) {
       body.pipe(proxyReq);

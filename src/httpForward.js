@@ -110,7 +110,9 @@ const httpForward = (
 
   function cleanup() {
     if (!state.isClose) {
-      res.end();
+      if (!isConcatData) {
+        res.end();
+      }
       state.isClose = true;
     }
     if (state.isConnect) {
