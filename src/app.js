@@ -1,5 +1,6 @@
 const Koa = require('koa');
 const path = require('path');
+const fs = require('fs');
 const http = require('http');
 const url = require('url');
 const Router = require('koa-router');
@@ -84,7 +85,7 @@ server.on('upgrade', (req, socket) => {
 
 process.on('uncaughtException', (error) => {
   console.error(error);
-  logger.fatal(error);
+  fs.writeFileSync(path.resolve(__dirname, '..', `error-${Date.now()}`), error.message);
   const killTimer = setTimeout(() => {
     process.exit(1);
   }, 3000);
