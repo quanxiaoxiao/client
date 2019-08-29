@@ -4,8 +4,7 @@
   "description": "",
   "main": "src/app.js",
   "scripts": {
-    "start": "node src/app.js",
-    "test": "ava"
+    "start": "node src/app.js"
   },
   "keywords": [],
   "author": "",
@@ -14,13 +13,13 @@
     "@koa/cors": "^3.0.0",
     "chalk": "^2.4.1",
     "destroy": "^1.0.4",
-    "koa": "^2.5.2",
+    "koa": "^2.8.1",
     "koa-compress": "^3.0.0",
     "koa-conditional-get": "^2.0.0",
     "koa-etag": "^3.0.0",
     "koa-router": "^7.4.0",
     "lodash": "^4.17.15",
-    "log4js": "^4.5.1",
+    "log4js": "^5.1.0",
     "path-to-regexp": "^3.0.0"
   },
   "devDependencies": {}
