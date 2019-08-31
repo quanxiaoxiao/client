@@ -7,10 +7,7 @@ module.exports = {
     },
     '/quan': {
       body: (ctx) => {
-        console.log(ctx.originalUrl, ctx.querystring);
-        return {
-          name: 'quan_+',
-        };
+        ctx.throw(401);
       },
     },
 

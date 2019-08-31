@@ -14,8 +14,12 @@ const body = handle => async (ctx) => {
       );
       ctx.body = data;
     } catch (error) {
-      console.log(error);
-      ctx.throw(500);
+      if (typeof error.status === 'number') {
+        throw error;
+      } else {
+        console.error(error);
+        ctx.throw(500);
+      }
     }
   } else {
     ctx.body = handle;
