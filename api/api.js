@@ -25,5 +25,11 @@ module.exports = {
     '/test': {
       proxy: 'http://localhost:3003',
     },
+    '/big': {
+      wsProxy: 'ws://localhost:3344',
+    },
+    '/visual': {
+      proxy: 'http://localhost:3008',
+    },
   },
 };

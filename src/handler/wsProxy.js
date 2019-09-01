@@ -1,3 +1,4 @@
+/* eslint no-use-before-define: 0 */
 const url = require('url');
 const http = require('http');
 const https = require('https');
@@ -30,23 +31,19 @@ const getOutgoing = (req, options) => {
     pathname,
   } = url.parse(target);
   let path;
-  if (pathname === '/') {
+  if (pathname === '/' || !pathname) {
     path = req.url;
   } else {
     path = `${pathname}?${query}`;
   }
-  const headers = {
-    ..._.omit(req.headers, ['host']),
-    ...(options.headers || {}),
-  };
   return {
     hostname,
     path,
     schema: /^wss:/.test(target) ? https : http,
-    port: parseInt(port, 10) || 80,
+    port: parseInt(port, 10) || (/^wss:/.test(target) ? 443 : 80),
     method: 'GET',
+    headers: _.omit(req.headers, ['host']),
     ...options,
-    headers,
   };
 };
 
@@ -57,79 +54,95 @@ const stream = (socket, outgoing, server) => {
   socket.setTimeout(0);
   socket.setNoDelay(true);
   socket.setKeepAlive(true, 0);
-  proxyReq.once('response', (res) => {
+  const handleProxyReqResponse = (res) => {
     if (!res.upgrade) {
       res.pipe(socket);
       socket.destroy();
     }
-  });
-  proxyReq.once('upgrade', (proxyRes, proxySocket) => {
+  };
+  const handleProxyReqUpgrade = (proxyRes, proxySocket) => {
+    socket.on('error', handleSocketError);
+
     socket.write(createHttpHeader('HTTP/1.1 101 Switching Protocols', proxyRes.headers));
 
-    socket.once('error', (error) => {
-      server.emit('error', error);
-      proxyReq.end();
-    });
+    function handleSocketClose() {
+      cleanupSocket();
+    }
 
-    proxySocket.once('error', (error) => {
+    function handleSocketError(error) {
       server.emit('error', error);
-      socket.end();
-    });
+      if (!socket.destroyed) {
+        socket.destroy();
+      }
+      cleanupSocket();
+    }
+
+    function cleanupSocket() {
+      socket.off('close', handleSocketClose);
+      socket.off('end', handleSocketClose);
+      socket.off('error', handleSocketError);
+    }
 
     proxySocket.pipe(socket);
     socket.pipe(proxySocket);
-  });
 
-  proxyReq.once('error', (error) => {
+    socket.on('close', handleSocketClose);
+    socket.on('end', handleSocketClose);
+  };
+
+  proxyReq.on('response', handleProxyReqResponse);
+  proxyReq.on('upgrade', handleProxyReqUpgrade);
+  proxyReq.on('end', handleProxyReqClose);
+  proxyReq.on('close', handleProxyReqClose);
+  proxyReq.on('error', handleProxyReqError);
+
+  function handleProxyReqError(error) {
     server.emit('error', error);
     socket.end();
-  });
+    cleanup();
+  }
+
+  function handleProxyReqClose() {
+    cleanup();
+  }
+
+  function cleanup() {
+    proxyReq.off('response', handleProxyReqResponse);
+    proxyReq.off('upgrade', handleProxyReqUpgrade);
+    proxyReq.off('end', handleProxyReqClose);
+    proxyReq.off('close', handleProxyReqClose);
+    proxyReq.off('error', handleProxyReqError);
+  }
+
   proxyReq.end();
 };
 
-
-const handlerMap = {
-  string: target => (req, socket, server) => {
-    const outgoing = getOutgoing(req, target);
-    if (!outgoing) {
-      socket.destroy();
-    } else {
-      stream(socket, outgoing, server);
-    }
-  },
-  function: fn => async (req, socket, server) => {
-    const ret = await fn(req);
-    const outgoing = getOutgoing(req, ret);
-    if (!outgoing) {
-      socket.destroy();
-    } else {
-      stream(socket, outgoing, server);
-    }
-  },
-  object: obj => (req, socket, server) => {
-    const outgoing = getOutgoing(req, obj);
-    if (!outgoing) {
-      socket.destroy();
-    } else {
-      stream(socket, outgoing, server);
-    }
-  },
-};
-
-const ws = (obj) => {
-  if (obj == null) {
-    return (req, socket) => {
-      socket.destroy();
+const ws = (handle) => {
+  const type = typeof handle;
+  if (type === 'function') {
+    return async (req, socket, server) => {
+      const ret = await handle(req);
+      const outgoing = getOutgoing(req, ret);
+      if (!outgoing) {
+        socket.destroy();
+      } else {
+        stream(socket, outgoing, server);
+      }
     };
   }
-  const handlerName = typeof obj;
-  const handler = handlerMap[handlerName];
-  if (!handler) {
-    return (req, socket) => {
-      socket.destroy();
+  if (type === 'string') {
+    return (req, socket, server) => {
+      const outgoing = getOutgoing(req, handle);
+      if (!outgoing) {
+        socket.destroy();
+      } else {
+        stream(socket, outgoing, server);
+      }
     };
   }
-  return handler(obj);
+  return (req, socket) => {
+    socket.destroy();
+  };
 };
 
 module.exports = ws;
