@@ -11,7 +11,7 @@ const compress = require('koa-compress');
 const conditional = require('koa-conditional-get');
 const etag = require('koa-etag');
 const log4js = require('log4js');
-const config = require('./config');
+const config = require('../api/config');
 
 log4js.configure({
   appenders: {
