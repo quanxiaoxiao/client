@@ -2,6 +2,7 @@ const Koa = require('koa');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
+const https = require('https');
 const url = require('url');
 const Router = require('koa-router');
 const pathToRegexp = require('path-to-regexp');
@@ -10,6 +11,7 @@ const compress = require('koa-compress');
 const conditional = require('koa-conditional-get');
 const etag = require('koa-etag');
 const log4js = require('log4js');
+const config = require('./config');
 
 log4js.configure({
   appenders: {
@@ -26,8 +28,6 @@ const { api, middlewares = [] } = require('../api/api.js');
 const apiParser = require('./apiParser');
 
 const logger = log4js.getLogger('app');
-
-const port = process.env.PORT || 3000;
 
 const app = new Koa();
 const router = new Router();
@@ -59,10 +59,15 @@ routeList
     router[method.toLowerCase()](pathname, handler);
   });
 
-const server = http.createServer(app.callback())
-  .listen(port, () => {
-    console.log(`server listen at port: ${port}`);
-    logger.info(`listen at port: ${port}`);
+const server = (config.cert ? https : http).createServer({
+  ...config.cert ? {
+    key: config.key,
+    cert: config.cert,
+  } : {},
+}, app.callback())
+  .listen(config.port, () => {
+    console.log(`server listen at port: ${config.port}`);
+    logger.info(`listen at port: ${config.port}`);
   });
 
 server.on('error', (error) => {
