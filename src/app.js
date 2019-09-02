@@ -4,35 +4,16 @@ const fs = require('fs');
 const http = require('http');
 const https = require('https');
 const url = require('url');
-const Router = require('koa-router');
-const pathToRegexp = require('path-to-regexp');
 const cors = require('@koa/cors');
 const compress = require('koa-compress');
 const conditional = require('koa-conditional-get');
 const etag = require('koa-etag');
-const log4js = require('log4js');
 const config = require('../api/config');
-
-log4js.configure({
-  appenders: {
-    app: {
-      type: 'dateFile',
-      filename: path.resolve(__dirname, '..', 'logs', 'app.log'),
-      pattern: '-yyyy-MM-dd',
-    },
-  },
-  categories: { default: { appenders: ['app'], level: 'DEBUG' } },
-});
 
 const { api, middlewares = [] } = require('../api/api.js');
 const apiParser = require('./apiParser');
 
-const logger = log4js.getLogger('app');
-
 const app = new Koa();
-const router = new Router();
-
-app.use(require('./middlewares/logger'));
 
 app.use(compress());
 app.use(conditional());
@@ -44,20 +25,22 @@ middlewares.forEach((middleware) => {
   app.use(middleware);
 });
 
-app.use(router.routes());
-app.use(router.allowedMethods());
-
 const routeList = apiParser(api);
 
-logger.info('---------routerList start---------');
-logger.info(routeList);
-logger.info('---------routerList end---------');
+console.log('---------routerList---------');
+console.log(routeList.map(item => `${item.method} ${item.pathname} ${item.handlerName}`).join('\n'));
+console.log('---------routerList---------');
 
-routeList
-  .filter(item => item.handlerName !== 'wsProxy')
-  .forEach(({ method, pathname, handler }) => {
-    router[method.toLowerCase()](pathname, handler);
-  });
+app.use(async (ctx, next) => {
+  const routerItem = routeList.find(item => item.method === ctx.method
+    && item.handlerName !== 'wsProxy'
+    && item.regexp.exec(ctx.path));
+  if (!routerItem) {
+    ctx.throw(404);
+  }
+  ctx.matchs = routerItem.regexp.exec(ctx.path);
+  routerItem.handler(ctx, next);
+});
 
 const server = (config.cert ? https : http).createServer({
   ...config.cert ? {
@@ -67,23 +50,22 @@ const server = (config.cert ? https : http).createServer({
 }, app.callback())
   .listen(config.port, () => {
     console.log(`server listen at port: ${config.port}`);
-    logger.info(`listen at port: ${config.port}`);
   });
 
 server.on('error', (error) => {
-  logger.error(error);
+  console.error(error);
 });
 
 server.on('upgrade', (req, socket) => {
   const { pathname } = url.parse(req.url);
-  const upgrade = routeList.find(item => pathToRegexp(item.pathname).test(pathname)
+  const upgrade = routeList.find(item => item.handlerName === 'wsProxy'
     && item.method === 'GET'
-    && item.handlerName === 'wsProxy');
+    && item.regexp.exec(pathname));
   if (upgrade) {
-    logger.info('socket connection:', socket.remoteAddress);
+    console.log('websocket connection:', socket.remoteAddress);
     upgrade.handler(req, socket, server);
   } else {
-    logger.info('socket destory:', socket.remoteAddress);
+    console.log('websocket deny:', socket.remoteAddress);
     socket.destroy();
   }
 });

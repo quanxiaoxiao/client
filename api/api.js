@@ -11,15 +11,33 @@ module.exports = {
       },
     },
 
-    '/sunlandapi/*': {
+    '/aa/(.*)': {
+      body: () => ({
+        name: 'aaa',
+      }),
+    },
+
+    '/cc/(.*)': {
+      body: () => ({
+        name: 'cc',
+      }),
+    },
+
+    '/bb/:name/:id': {
+      body: () => ({
+        name: 'bbb',
+      }),
+    },
+
+    '/sunlandapi/(.*)': {
       proxy: 'http://localhost:3003',
     },
 
-    '/sunland/*': {
+    '/sunland/(.*)': {
       proxy: 'http://localhost:3003',
     },
 
-    '/static/*': {
+    '/static/(.*)': {
       proxy: 'http://localhost:3003',
     },
     '/test': {

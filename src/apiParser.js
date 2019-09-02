@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const pathToRegexp = require('path-to-regexp');
 const handler = require('./handler');
 
 const METHODS = ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'];
@@ -72,6 +73,7 @@ module.exports = api => Object.entries(api)
   .map(item => ({
     pathname: item.pathname,
     method: item.method,
+    regexp: pathToRegexp(item.pathname),
     handlerName: item.handlerName,
     handler: handler[item.handlerName](item.handlerValue),
   }));

@@ -4,7 +4,7 @@ const https = require('https');
 const _ = require('lodash');
 
 module.exports = (ctx, options) => {
-  if (options == null) {
+  if (_.isEmpty(options)) {
     return null;
   }
 
