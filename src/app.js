@@ -39,7 +39,7 @@ app.use(async (ctx, next) => {
     ctx.throw(404);
   }
   ctx.matchs = routerItem.regexp.exec(ctx.path);
-  routerItem.handler(ctx, next);
+  await routerItem.handler(ctx, next);
 });
 
 const server = (config.cert ? https : http).createServer({
