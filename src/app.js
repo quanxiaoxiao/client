@@ -4,22 +4,12 @@ const fs = require('fs');
 const http = require('http');
 const https = require('https');
 const url = require('url');
-const cors = require('@koa/cors');
-const compress = require('koa-compress');
-const conditional = require('koa-conditional-get');
-const etag = require('koa-etag');
-const config = require('../api/config');
+const config = require('./config');
+const { api, middlewares = [] } = require('./apis');
 
-const { api, middlewares = [] } = require('../api/api.js');
-const apiParser = require('./apiParser');
+const apiParser = require('./apilib/apiParser');
 
 const app = new Koa();
-
-app.use(compress());
-app.use(conditional());
-app.use(etag());
-app.use(cors());
-
 
 middlewares.forEach((middleware) => {
   app.use(middleware);
@@ -28,11 +18,11 @@ middlewares.forEach((middleware) => {
 const routeList = apiParser(api);
 
 console.log('---------routerList---------');
-console.log(routeList.map(item => `${item.method} ${item.pathname} ${item.handlerName}`).join('\n'));
+console.log(routeList.map((item) => `${item.method} ${item.pathname} ${item.handlerName}`).join('\n'));
 console.log('---------routerList---------');
 
 app.use(async (ctx, next) => {
-  const routerItem = routeList.find(item => item.method === ctx.method
+  const routerItem = routeList.find((item) => item.method === ctx.method
     && item.handlerName !== 'wsProxy'
     && item.regexp.exec(ctx.path));
   if (!routerItem) {
@@ -58,7 +48,7 @@ server.on('error', (error) => {
 
 server.on('upgrade', (req, socket) => {
   const { pathname } = url.parse(req.url);
-  const upgrade = routeList.find(item => item.handlerName === 'wsProxy'
+  const upgrade = routeList.find((item) => item.handlerName === 'wsProxy'
     && item.method === 'GET'
     && item.regexp.exec(pathname));
   if (upgrade) {
