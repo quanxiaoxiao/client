@@ -16,7 +16,7 @@
     "koa-compress": "^3.0.0",
     "koa-conditional-get": "^2.0.0",
     "koa-etag": "^3.0.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "lowdb": "^1.0.0",
     "moment": "^2.24.0",
     "on-finished": "^2.3.0",
